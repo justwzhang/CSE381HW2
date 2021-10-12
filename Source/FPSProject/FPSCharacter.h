@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Camera/CameraComponent.h"
-#include "Components/CapsultComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "FPSProjectile.h"
 #include "FPSCharacter.generated.h"
 
@@ -31,7 +31,7 @@ public:
     virtual void Tick(float DeltaTime) override;
 
     // Called to bind functionality to input
-    virtual void SetupPlayerInputComponent(class UIComponent* PlayerInputComponent) override;
+    virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
     // Handles input for moving forward and backward.
     UFUNCTION()
