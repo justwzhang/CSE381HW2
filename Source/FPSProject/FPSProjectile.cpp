@@ -33,7 +33,7 @@ AFPSProjectile::AFPSProjectile()
         ProjectileMovementComponent->bRotationFollowsVelocity = true;
         ProjectileMovementComponent->bShouldBounce = true;
         ProjectileMovementComponent->Bounciness = 0.3f;
-        ProjectileMovementComponent->ProjectileGravityScale = 0.0f;
+        ProjectileMovementComponent->ProjectileGravityScale = 3.0f;
     }
 
     if (!ProjectileMeshComponent)
@@ -55,7 +55,7 @@ AFPSProjectile::AFPSProjectile()
         ProjectileMeshComponent->SetupAttachment(RootComponent);
     }
     // Delete the projectile after 3 seconds.
-    InitialLifeSpan = 3.0f;
+    //InitialLifeSpan = 3.0f;
     // Set the sphere's collision profile name to "Projectile".
     CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Projectile"));
 
