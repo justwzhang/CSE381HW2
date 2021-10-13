@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc.All Rights Reserved.
 
 #include "FPSProjectile.h"
+#include <iostream>
 
 // Sets default values
 AFPSProjectile::AFPSProjectile()
@@ -32,7 +33,7 @@ AFPSProjectile::AFPSProjectile()
         ProjectileMovementComponent->MaxSpeed = 3000.0f;
         ProjectileMovementComponent->bRotationFollowsVelocity = true;
         ProjectileMovementComponent->bShouldBounce = true;
-        ProjectileMovementComponent->Bounciness = 0.3f;
+        ProjectileMovementComponent->Bounciness = 0.8f;
         ProjectileMovementComponent->ProjectileGravityScale = 3.0f;
     }
 
@@ -51,7 +52,7 @@ AFPSProjectile::AFPSProjectile()
             ProjectileMaterialInstance = UMaterialInstanceDynamic::Create(Material.Object, ProjectileMeshComponent);
         }
         ProjectileMeshComponent->SetMaterial(0, ProjectileMaterialInstance);
-        ProjectileMeshComponent->SetRelativeScale3D(FVector(0.09f, 0.09f, 0.09f));
+        ProjectileMeshComponent->SetRelativeScale3D(FVector(0.2f, 0.2f, 0.2f));
         ProjectileMeshComponent->SetupAttachment(RootComponent);
     }
     // Delete the projectile after 3 seconds.
@@ -86,10 +87,10 @@ void AFPSProjectile::FireInDirection(const FVector& ShootDirection)
 // Function that is called when the projectile hits something.
 void AFPSProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
-    if (OtherActor != this && OtherComponent->IsSimulatingPhysics())
+    /*if (OtherActor != this)
     {
         OtherComponent->AddImpulseAtLocation(ProjectileMovementComponent->Velocity * 100.0f, Hit.ImpactPoint);
-    }
+    }*/
 
-    Destroy();
+    //Destroy();
 }
