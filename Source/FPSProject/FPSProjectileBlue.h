@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -6,23 +6,22 @@
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "FPSProjectile.generated.h"
+#include "FPSProjectileBlue.generated.h"
 
 UCLASS()
-class FPSPROJECT_API AFPSProjectile : public AActor
+class FPSPROJECT_API AFPSProjectileBlue : public AActor
 {
-    GENERATED_BODY()
-
-public: 
-    // Sets default values for this actor's properties
-    AFPSProjectile();
+	GENERATED_BODY()
+	
+public:	
+	// Sets default values for this actor's properties
+	AFPSProjectileBlue();
 
 protected:
-    // Called when the game starts or when spawned
-    virtual void BeginPlay() override;
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
 
 public:
-    //1:orange, 2:blue
     int ballColor = 1;
 
     // Called every frame
@@ -50,10 +49,5 @@ public:
     // Function that is called when the projectile hits something.
     UFUNCTION()
     void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
-
-
-    void SwapToBlue();
-
-    void SwapToOrange();
 
 };

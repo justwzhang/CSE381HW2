@@ -1,10 +1,10 @@
-// Copyright Epic Games, Inc.All Rights Reserved.
+// Fill out your copyright notice in the Description page of Project Settings.
 
-#include "FPSProjectile.h"
-#include "GameFramework/Character.h"
+
+#include "FPSProjectileBlue.h"
 
 // Sets default values
-AFPSProjectile::AFPSProjectile()
+AFPSProjectileBlue::AFPSProjectileBlue()
 {
     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
@@ -33,7 +33,7 @@ AFPSProjectile::AFPSProjectile()
         ProjectileMovementComponent->MaxSpeed = 3000.0f;
         ProjectileMovementComponent->bRotationFollowsVelocity = true;
         ProjectileMovementComponent->bShouldBounce = true;
-        ProjectileMovementComponent->Bounciness = 0.7f;
+        ProjectileMovementComponent->Bounciness = 0.8f;
         ProjectileMovementComponent->ProjectileGravityScale = 3.0f;
     }
 
@@ -46,22 +46,11 @@ AFPSProjectile::AFPSProjectile()
             ProjectileMeshComponent->SetStaticMesh(Mesh.Object);
         }
 
-    //    //static ConstructorHelpers::FObjectFinder<UMaterial> Material(TEXT("'/Game/SphereMaterial.SphereMaterial'"));
-        if (ballColor == 1) {
-            static ConstructorHelpers::FObjectFinder<UMaterial>Material(TEXT("'/Game/SphereMaterial.SphereMaterial'"));
-            if (Material.Succeeded())
-            {
-                ProjectileMaterialInstance = UMaterialInstanceDynamic::Create(Material.Object, ProjectileMeshComponent);
-            }
+        static ConstructorHelpers::FObjectFinder<UMaterial>Material(TEXT("'/Game/SphereMaterialBlue.SphereMaterialBlue'"));
+        if (Material.Succeeded())
+        {
+            ProjectileMaterialInstance = UMaterialInstanceDynamic::Create(Material.Object, ProjectileMeshComponent);
         }
-        else {
-            static ConstructorHelpers::FObjectFinder<UMaterial>Material(TEXT("'/Game/SphereMaterialBlue.SphereMaterialBlue'"));
-            if (Material.Succeeded())
-            {
-                ProjectileMaterialInstance = UMaterialInstanceDynamic::Create(Material.Object, ProjectileMeshComponent);
-            }
-        }
-        
         ProjectileMeshComponent->SetMaterial(0, ProjectileMaterialInstance);
         ProjectileMeshComponent->SetRelativeScale3D(FVector(0.2f, 0.2f, 0.2f));
         ProjectileMeshComponent->SetupAttachment(RootComponent);
@@ -72,51 +61,38 @@ AFPSProjectile::AFPSProjectile()
     CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Projectile"));
 
     // Event called when component hits something.
-    CollisionComponent->OnComponentHit.AddDynamic(this, &AFPSProjectile::OnHit);
+    CollisionComponent->OnComponentHit.AddDynamic(this, &AFPSProjectileBlue::OnHit);
 }
 
-void AFPSProjectile::SwapToBlue() {
-    ballColor = 2;
-}
-void AFPSProjectile::SwapToOrange() {
-    ballColor = 1;
-}
 // Called when the game starts or when spawned
-void AFPSProjectile::BeginPlay()
+void AFPSProjectileBlue::BeginPlay()
 {
     Super::BeginPlay();
 
 }
 
 // Called every frame
-void AFPSProjectile::Tick(float DeltaTime)
+void AFPSProjectileBlue::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
 }
 
 // Function that initializes the projectile's velocity in the shoot direction.
-void AFPSProjectile::FireInDirection(const FVector& ShootDirection)
+void AFPSProjectileBlue::FireInDirection(const FVector & ShootDirection)
 {
     ProjectileMovementComponent->Velocity = ShootDirection * ProjectileMovementComponent->InitialSpeed;
 }
 
 // Function that is called when the projectile hits something.
-void AFPSProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
+void AFPSProjectileBlue::OnHit(UPrimitiveComponent * HitComponent, AActor * OtherActor, UPrimitiveComponent * OtherComponent, FVector NormalImpulse, const FHitResult & Hit)
 {
-    GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("In OnHit Event")); //for debugging
-    //the only other thing that will be simulating physics are the things in the hoops so the code for
-    //scoring should be in this if
-    if (OtherActor != this && OtherComponent->IsSimulatingPhysics())
+    /*if (OtherActor != this && OtherComponent->IsSimulatingPhysics())
     {
-        //OtherComponent->AddImpulseAtLocation(ProjectileMovementComponent->Velocity * 100.0f, Hit.ImpactPoint);
-        //Code for Scoring
-        GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("test")); //for debugging
+        OtherComponent->AddImpulseAtLocation(ProjectileMovementComponent->Velocity * 100.0f, Hit.ImpactPoint);
         Destroy();
-    }
-    if (dynamic_cast<ACharacter*>(OtherActor) != nullptr) {
-        GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("HitPlayer")); //for debugging
-    }//not working rn
+    }*/
 
-    
+
 }
+

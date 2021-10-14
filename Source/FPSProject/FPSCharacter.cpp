@@ -104,9 +104,11 @@ void AFPSCharacter::StopJump()
 
 void AFPSCharacter::Fire()
 {
+   // GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("CalledFire")); //for debugging
     // Attempt to fire a projectile.
-    if (ProjectileClass)
+    if (ProjectileClass && ballColor != 0)
     {
+        //GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("ProjectileClass")); //for debugging
         // Get the camera transform.
         FVector CameraLocation;
         FRotator CameraRotation;
@@ -136,6 +138,7 @@ void AFPSCharacter::Fire()
                 // Set the projectile's initial trajectory.
                 FVector LaunchDirection = MuzzleRotation.Vector();
                 Projectile->FireInDirection(LaunchDirection);
+                //ballColor = 0; //for not allowing the ball to be thrown
             }
         }
     }

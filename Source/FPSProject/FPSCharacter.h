@@ -27,6 +27,12 @@ protected:
         TSubclassOf<class AFPSProjectile> ProjectileClass;
 
 public:
+
+    //for checking if the player is holding a ball
+    //bool holdingBall = false;
+    //for checking which color the ball is 0:none, 1:orange, 2:blue
+    int ballColor = 1;
+
     // Called every frame
     virtual void Tick(float DeltaTime) override;
 
