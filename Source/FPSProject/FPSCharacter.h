@@ -7,6 +7,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "FPSProjectile.h"
+#include "FPSBlueProjectile.h"
 #include "FPSCharacter.generated.h"
 
 UCLASS()
@@ -24,14 +25,16 @@ protected:
 
     // Projectile class to spawn.
     UPROPERTY(EditAnywhere, Category = Projectile)
-        TSubclassOf<class AFPSProjectile> ProjectileClass;
+    TSubclassOf<class AFPSProjectile> ProjectileClass;
+    UPROPERTY(EditAnywhere, Category = Projectile)
+    TSubclassOf<class AFPSBlueProjectile> BlueProjectileClass;
 
 public:
 
     //for checking if the player is holding a ball
     //bool holdingBall = false;
     //for checking which color the ball is 0:none, 1:orange, 2:blue
-    int ballColor = 1;
+    int ballColor = 0;
 
     // Called every frame
     virtual void Tick(float DeltaTime) override;

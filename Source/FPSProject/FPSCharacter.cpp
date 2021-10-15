@@ -2,6 +2,7 @@
 
 #include "FPSCharacter.h"
 #include "FPSProjectile.h"
+#include "FPSBlueProjectile.h"
 // Sets default values
 AFPSCharacter::AFPSCharacter()
 {
@@ -49,7 +50,7 @@ AFPSCharacter::AFPSCharacter()
 
 void AFPSCharacter::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-    if (OtherActor && (OtherActor != this) && OtherComp)
+    if (OtherActor && (OtherActor != this) && OtherComp && ballColor == 0)
     {
         GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Overlap Begin"));
         if (dynamic_cast<AFPSProjectile*>(OtherActor) != nullptr) {
@@ -57,6 +58,12 @@ void AFPSCharacter::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, cl
             AFPSProjectile* temp = dynamic_cast<AFPSProjectile*>(OtherActor);
             temp->Destroy();
             ballColor = 1;
+        }
+        if (dynamic_cast<AFPSBlueProjectile*>(OtherActor) != nullptr) {
+            //GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Is A Projectile"));
+            AFPSBlueProjectile* temp = dynamic_cast<AFPSBlueProjectile*>(OtherActor);
+            temp->Destroy();
+            ballColor = 2;
         }
     }
 }
@@ -136,7 +143,7 @@ void AFPSCharacter::Fire()
 {
    // GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("CalledFire")); //for debugging
     // Attempt to fire a projectile.
-    if (ProjectileClass && ballColor != 0)
+    if (ProjectileClass && ballColor == 1)
     {
         //GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("ProjectileClass")); //for debugging
         // Get the camera transform.
@@ -172,4 +179,77 @@ void AFPSCharacter::Fire()
             }
         }
     }
+    if (BlueProjectileClass && ballColor == 2)
+    {
+        //GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("ProjectileClass")); //for debugging
+        // Get the camera transform.
+        FVector CameraLocation;
+        FRotator CameraRotation;
+        GetActorEyesViewPoint(CameraLocation, CameraRotation);
+
+        // Set MuzzleOffset to spawn projectiles slightly in front of the camera.
+        MuzzleOffset.Set(100.0f, 0.0f, 0.0f);
+
+        // Transform MuzzleOffset from camera space to world space.
+        FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
+
+        // Skew the aim to be slightly upwards.
+        FRotator MuzzleRotation = CameraRotation;
+        MuzzleRotation.Pitch += 10.0f;
+
+        UWorld* World = GetWorld();
+        if (World)
+        {
+            FActorSpawnParameters SpawnParams;
+            SpawnParams.Owner = this;
+            SpawnParams.Instigator = GetInstigator();
+            
+            // Spawn the projectile at the muzzle.
+            AFPSBlueProjectile* Projectile = World->SpawnActor<AFPSBlueProjectile>(BlueProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
+            if (Projectile)
+            {
+                // Set the projectile's initial trajectory.
+                FVector LaunchDirection = MuzzleRotation.Vector();
+                Projectile->FireInDirection(LaunchDirection);
+                ballColor = 0; //for not allowing the ball to be thrown
+            }
+        }
+    }
+    //GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("ProjectileClass")); //for debugging
+    //if (BlueProjectileClass)
+    //{
+    //    GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("CalledFire")); //for debugging
+    //    // Get the camera transform.
+    //    FVector CameraLocation;
+    //    FRotator CameraRotation;
+    //    GetActorEyesViewPoint(CameraLocation, CameraRotation);
+
+    //    // Set MuzzleOffset to spawn projectiles slightly in front of the camera.
+    //    MuzzleOffset.Set(100.0f, 0.0f, 0.0f);
+
+    //    // Transform MuzzleOffset from camera space to world space.
+    //    FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
+
+    //    // Skew the aim to be slightly upwards.
+    //    FRotator MuzzleRotation = CameraRotation;
+    //    MuzzleRotation.Pitch += 10.0f;
+
+    //    UWorld* World = GetWorld();
+    //    if (World)
+    //    {
+    //        FActorSpawnParameters SpawnParams;
+    //        SpawnParams.Owner = this;
+    //        SpawnParams.Instigator = GetInstigator();
+
+    //        // Spawn the projectile at the muzzle.
+    //        AFPSBlueProjectile* Projectile = World->SpawnActor<AFPSBlueProjectile>(BlueProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
+    //        if (Projectile)
+    //        {
+    //            // Set the projectile's initial trajectory.
+    //            FVector LaunchDirection = MuzzleRotation.Vector();
+    //            Projectile->FireInDirection(LaunchDirection);
+    //            ballColor = 0; //for not allowing the ball to be thrown
+    //        }
+    //    }
+    //}
 }
