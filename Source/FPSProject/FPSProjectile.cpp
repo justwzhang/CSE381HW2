@@ -22,6 +22,10 @@ AFPSProjectile::AFPSProjectile()
         CollisionComponent->InitSphereRadius(15.0f);
         // Set the root component to be the collision component.
         RootComponent = CollisionComponent;
+        TriggerComponent = CreateDefaultSubobject<USphereComponent>(TEXT("Trigger Capsule"));
+        TriggerComponent ->InitSphereRadius(20.0f);
+        TriggerComponent->SetCollisionProfileName(TEXT("Trigger"));
+        TriggerComponent->SetupAttachment(RootComponent);
     }
 
     if (!ProjectileMovementComponent)
@@ -45,23 +49,11 @@ AFPSProjectile::AFPSProjectile()
         {
             ProjectileMeshComponent->SetStaticMesh(Mesh.Object);
         }
-
-    //    //static ConstructorHelpers::FObjectFinder<UMaterial> Material(TEXT("'/Game/SphereMaterial.SphereMaterial'"));
-        if (ballColor == 1) {
-            static ConstructorHelpers::FObjectFinder<UMaterial>Material(TEXT("'/Game/SphereMaterial.SphereMaterial'"));
-            if (Material.Succeeded())
-            {
-                ProjectileMaterialInstance = UMaterialInstanceDynamic::Create(Material.Object, ProjectileMeshComponent);
-            }
+        static ConstructorHelpers::FObjectFinder<UMaterial>Material(TEXT("'/Game/SphereMaterial.SphereMaterial'"));
+        if (Material.Succeeded())
+        {
+            ProjectileMaterialInstance = UMaterialInstanceDynamic::Create(Material.Object, ProjectileMeshComponent);
         }
-        else {
-            static ConstructorHelpers::FObjectFinder<UMaterial>Material(TEXT("'/Game/SphereMaterialBlue.SphereMaterialBlue'"));
-            if (Material.Succeeded())
-            {
-                ProjectileMaterialInstance = UMaterialInstanceDynamic::Create(Material.Object, ProjectileMeshComponent);
-            }
-        }
-        
         ProjectileMeshComponent->SetMaterial(0, ProjectileMaterialInstance);
         ProjectileMeshComponent->SetRelativeScale3D(FVector(0.2f, 0.2f, 0.2f));
         ProjectileMeshComponent->SetupAttachment(RootComponent);
@@ -75,12 +67,6 @@ AFPSProjectile::AFPSProjectile()
     CollisionComponent->OnComponentHit.AddDynamic(this, &AFPSProjectile::OnHit);
 }
 
-void AFPSProjectile::SwapToBlue() {
-    ballColor = 2;
-}
-void AFPSProjectile::SwapToOrange() {
-    ballColor = 1;
-}
 // Called when the game starts or when spawned
 void AFPSProjectile::BeginPlay()
 {
@@ -104,18 +90,18 @@ void AFPSProjectile::FireInDirection(const FVector& ShootDirection)
 // Function that is called when the projectile hits something.
 void AFPSProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
-    GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("In OnHit Event")); //for debugging
+    //GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("In OnHit Event")); //for debugging
     //the only other thing that will be simulating physics are the things in the hoops so the code for
     //scoring should be in this if
     if (OtherActor != this && OtherComponent->IsSimulatingPhysics())
     {
         //OtherComponent->AddImpulseAtLocation(ProjectileMovementComponent->Velocity * 100.0f, Hit.ImpactPoint);
         //Code for Scoring
-        GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("test")); //for debugging
+        //GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("test")); //for debugging
         Destroy();
     }
     if (dynamic_cast<ACharacter*>(OtherActor) != nullptr) {
-        GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("HitPlayer")); //for debugging
+        //GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("HitPlayer")); //for debugging
     }//not working rn
 
     

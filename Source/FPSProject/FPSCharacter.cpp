@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "FPSCharacter.h"
-
+#include "FPSProjectile.h"
 // Sets default values
 AFPSCharacter::AFPSCharacter()
 {
@@ -37,6 +37,36 @@ AFPSCharacter::AFPSCharacter()
 
     // The owning player doesn't see the regular (third-person) body mesh.
     GetMesh()->SetOwnerNoSee(true);
+
+    // declare trigger capsule
+    TriggerCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Trigger Capsule"));
+    TriggerCapsule->InitCapsuleSize(55.f, 96.0f);;
+    TriggerCapsule->SetCollisionProfileName(TEXT("Trigger"));
+    TriggerCapsule->SetupAttachment(RootComponent);
+    TriggerCapsule->OnComponentBeginOverlap.AddDynamic(this, &AFPSCharacter::OnOverlapBegin);
+    TriggerCapsule->OnComponentEndOverlap.AddDynamic(this, &AFPSCharacter::OnOverlapEnd);
+}
+
+void AFPSCharacter::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+    if (OtherActor && (OtherActor != this) && OtherComp)
+    {
+        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Overlap Begin"));
+        if (dynamic_cast<AFPSProjectile*>(OtherActor) != nullptr) {
+            //GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Is A Projectile"));
+            AFPSProjectile* temp = dynamic_cast<AFPSProjectile*>(OtherActor);
+            temp->Destroy();
+            ballColor = 1;
+        }
+    }
+}
+
+void AFPSCharacter::OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+    if (OtherActor && (OtherActor != this) && OtherComp)
+    {
+        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Overlap End"));
+    }
 }
 
 // Called when the game starts or when spawned
@@ -138,7 +168,7 @@ void AFPSCharacter::Fire()
                 // Set the projectile's initial trajectory.
                 FVector LaunchDirection = MuzzleRotation.Vector();
                 Projectile->FireInDirection(LaunchDirection);
-                //ballColor = 0; //for not allowing the ball to be thrown
+                ballColor = 0; //for not allowing the ball to be thrown
             }
         }
     }

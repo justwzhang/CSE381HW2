@@ -32,6 +32,10 @@ public:
     UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
     USphereComponent* CollisionComponent;
 
+    // Sphere tigger component
+    UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
+        USphereComponent* TriggerComponent;
+
     // Projectile movement component
     UPROPERTY(VisibleAnywhere, Category = Movement)
     UProjectileMovementComponent* ProjectileMovementComponent;
@@ -50,10 +54,5 @@ public:
     // Function that is called when the projectile hits something.
     UFUNCTION()
     void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
-
-
-    void SwapToBlue();
-
-    void SwapToOrange();
 
 };
