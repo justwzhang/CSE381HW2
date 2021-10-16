@@ -2,6 +2,7 @@
 
 
 #include "FPSBlueProjectile.h"
+#include <FPSProject/JumpingAICharacter.h>
 
 // Sets default values
 AFPSBlueProjectile::AFPSBlueProjectile()
@@ -93,7 +94,7 @@ void AFPSBlueProjectile::OnHit(UPrimitiveComponent * HitComponent, AActor * Othe
     //GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("In OnHit Event")); //for debugging
     //the only other thing that will be simulating physics are the things in the hoops so the code for
     //scoring should be in this if
-    if (OtherActor != this && OtherComponent->IsSimulatingPhysics())
+    if (OtherActor != this && OtherComponent->IsSimulatingPhysics() && dynamic_cast<AJumpingAICharacter*>(OtherActor))
     {
         //OtherComponent->AddImpulseAtLocation(ProjectileMovementComponent->Velocity * 100.0f, Hit.ImpactPoint);
         //Code for Scoring
