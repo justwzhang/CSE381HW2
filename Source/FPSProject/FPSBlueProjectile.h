@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Camera/CameraComponent.h"
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -55,4 +56,15 @@ public:
     UFUNCTION()
         void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
 
+    UPROPERTY(EditAnywhere)
+        USceneComponent* HoldingComp;
+
+    UFUNCTION()
+        void Pickup();
+
+    bool Holding;
+    bool Gravity;
+
+    UCameraComponent* PlayerCamera;
+    ACharacter* MyCharacter;
 };

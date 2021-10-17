@@ -29,6 +29,12 @@ protected:
     UPROPERTY(EditAnywhere, Category = Projectile)
     TSubclassOf<class AFPSBlueProjectile> BlueProjectileClass;
 
+    /*UPROPERTY(EditDefaultsOnly, Category = Spawning)
+    TSubclassOf<class AFPSProjectile> ProjectileClassSpawn;
+    UPROPERTY(EditDefaultsOnly, Category = Spawning)
+    TSubclassOf<class AFPSBlueProjectile> BlueProjectileClassSpawn;*/
+
+
 public:
 
     //for checking if the player is holding a ball
@@ -84,4 +90,16 @@ public:
     // declare overlap end function
     UFUNCTION()
         void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+    /*UFUNCTION()
+        void SpawnObject(const FVector loc, const FRotator rot);*/
+
+    UPROPERTY(EditAnywhere)
+    class AFPSProjectile* CurrentHeldProjectile;
+    UPROPERTY(EditAnywhere)
+    class AFPSBlueProjectile* CurrentHeldBlueProjectile;
+    
+    /** Holding Component */
+    UPROPERTY(EditAnywhere)
+    USceneComponent* HoldingComponent;
 };

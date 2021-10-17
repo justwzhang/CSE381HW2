@@ -2,6 +2,8 @@
 
 
 #include "FPSBlueProjectile.h"
+#include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
 #include <FPSProject/JumpingAICharacter.h>
 
 // Sets default values
@@ -9,6 +11,8 @@ AFPSBlueProjectile::AFPSBlueProjectile()
 {
     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
+    Holding = false;
+    Gravity = true;
 
     if (!RootComponent)
     {
@@ -72,7 +76,35 @@ AFPSBlueProjectile::AFPSBlueProjectile()
 void AFPSBlueProjectile::BeginPlay()
 {
     Super::BeginPlay();
-
+    MyCharacter = UGameplayStatics::GetPlayerCharacter(this, 0);
+    PlayerCamera = MyCharacter->FindComponentByClass<UCameraComponent>();
+    TArray<USceneComponent*> Components;
+    MyCharacter->GetComponents(Components);
+    if (Components.Num() > 0)
+    {
+        for (auto& Comp : Components)
+        {
+            if (Comp->GetName() == "HoldingComponent")
+            {
+                HoldingComp = Cast<USceneComponent>(Comp);
+            }
+        }
+    }
+}
+void AFPSBlueProjectile::Pickup()
+{
+    GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("BluePickup"));
+    Holding = !Holding;
+    Gravity = !Gravity;
+    ProjectileMeshComponent->SetEnableGravity(Gravity);
+    ProjectileMeshComponent->SetSimulatePhysics(Holding ? false : true);
+    ProjectileMeshComponent->SetCollisionEnabled(Holding ? ECollisionEnabled::NoCollision : ECollisionEnabled::QueryAndPhysics);
+    if (HoldingComp && Holding)
+    {
+        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("HoldingComp"));
+        ProjectileMeshComponent->AttachToComponent(HoldingComp, FAttachmentTransformRules::KeepWorldTransform);
+        SetActorLocation(HoldingComp->GetComponentLocation());
+    }
 }
 
 // Called every frame

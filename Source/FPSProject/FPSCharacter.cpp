@@ -3,6 +3,8 @@
 #include "FPSCharacter.h"
 #include "FPSProjectile.h"
 #include "FPSBlueProjectile.h"
+#include <thread>
+#include <chrono>
 // Sets default values
 AFPSCharacter::AFPSCharacter()
 {
@@ -46,23 +48,34 @@ AFPSCharacter::AFPSCharacter()
     TriggerCapsule->SetupAttachment(RootComponent);
     TriggerCapsule->OnComponentBeginOverlap.AddDynamic(this, &AFPSCharacter::OnOverlapBegin);
     TriggerCapsule->OnComponentEndOverlap.AddDynamic(this, &AFPSCharacter::OnOverlapEnd);
-}
+
+    HoldingComponent = CreateDefaultSubobject<USceneComponent>(TEXT("HoldingComponent"));
+    HoldingComponent->SetRelativeLocation(FVector(-100.0f, 0.0f, -40.0f));
+    HoldingComponent->SetupAttachment(FPSMesh);
+
+    CurrentHeldProjectile = nullptr;
+    CurrentHeldBlueProjectile = nullptr;
+    }
 
 void AFPSCharacter::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
     if (OtherActor && (OtherActor != this) && OtherComp && ballColor == 0)
     {
-        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Overlap Begin"));
+        //GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Overlap Begin"));
         if (dynamic_cast<AFPSProjectile*>(OtherActor) != nullptr) {
             //GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Is A Projectile"));
             AFPSProjectile* temp = dynamic_cast<AFPSProjectile*>(OtherActor);
-            temp->Destroy();
+            CurrentHeldProjectile = temp;
+            CurrentHeldProjectile->Pickup();
+            //temp->Destroy();
             ballColor = 1;
         }
         if (dynamic_cast<AFPSBlueProjectile*>(OtherActor) != nullptr) {
             //GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Is A Projectile"));
             AFPSBlueProjectile* temp = dynamic_cast<AFPSBlueProjectile*>(OtherActor);
-            temp->Destroy();
+            CurrentHeldBlueProjectile = temp;
+            temp->Pickup();
+            //temp->Destroy();
             ballColor = 2;
         }
     }
@@ -72,7 +85,7 @@ void AFPSCharacter::OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, clas
 {
     if (OtherActor && (OtherActor != this) && OtherComp)
     {
-        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Overlap End"));
+        //GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Overlap End"));
     }
 }
 
@@ -85,16 +98,39 @@ void AFPSCharacter::BeginPlay()
     {
         // Display a debug message for five seconds. 
         // The -1 "Key" value argument prevents the message from being updated or refreshed.
-        GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("We are using FPSCharacter."));
+        //GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("We are using FPSCharacter."));
     }
 }
 
+/*void AFPSCharacter::SpawnObject(const FVector loc, const FRotator rot) {
+    if (ballColor == 1) {//orange
+        //GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("In Spawned orange")); //for debugging
+        const FRotator rotation;
+        const FActorSpawnParameters temp;
+        AFPSProjectile* Spawned = GetWorld()->SpawnActor<AFPSProjectile>(loc, rot, temp);
+        //if (Spawned != nullptr) {
+        //    GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Spawned in")); //for debugging
+        //}
+        using namespace std::this_thread; // sleep_for, sleep_until
+        using namespace std::chrono; // nanoseconds, system_clock, seconds
+        sleep_for(nanoseconds(10000000));
+        Spawned ->Destroy();
+    }
+    else if (ballColor == 2) {//blue
+    }
+}*/
 // Called every frame
 void AFPSCharacter::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-
+    /*const FVector loc = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
+    const FVector temp = FPSCameraComponent->GetRelativeLocation();
+    const FVector newloc = loc + FVector(150,0,20);
+    const FVector newTemp = temp + FVector(80, 0, 50);
+    const FRotator rot = FPSCameraComponent->GetRelativeRotation();
+    SpawnObject(newTemp, rot);*/
 }
+    
 
 // Called to bind functionality to input
 void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -114,6 +150,8 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
     PlayerInputComponent->BindAction("Jump", IE_Released, this, &AFPSCharacter::StopJump);
     PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AFPSCharacter::Fire);
 }
+
+   
 
 void AFPSCharacter::MoveForward(float Value)
 {
@@ -141,7 +179,7 @@ void AFPSCharacter::StopJump()
 
 void AFPSCharacter::Fire()
 {
-   // GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("CalledFire")); //for debugging
+    //GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("CalledFire")); //for debugging
     // Attempt to fire a projectile.
     if (ProjectileClass && ballColor == 1)
     {
@@ -172,10 +210,12 @@ void AFPSCharacter::Fire()
             AFPSProjectile* Projectile = World->SpawnActor<AFPSProjectile>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
             if (Projectile)
             {
+                CurrentHeldProjectile->Destroy();
+                CurrentHeldProjectile = nullptr;
                 // Set the projectile's initial trajectory.
                 FVector LaunchDirection = MuzzleRotation.Vector();
                 Projectile->FireInDirection(LaunchDirection);
-                ballColor = 0; //for not allowing the ball to be thrown
+                ballColor = 0; //for not allowing the ball to be thrown again
             }
         }
     }
@@ -208,6 +248,8 @@ void AFPSCharacter::Fire()
             AFPSBlueProjectile* Projectile = World->SpawnActor<AFPSBlueProjectile>(BlueProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
             if (Projectile)
             {
+                CurrentHeldBlueProjectile->Destroy();
+                CurrentHeldBlueProjectile = nullptr;
                 // Set the projectile's initial trajectory.
                 FVector LaunchDirection = MuzzleRotation.Vector();
                 Projectile->FireInDirection(LaunchDirection);
@@ -215,41 +257,4 @@ void AFPSCharacter::Fire()
             }
         }
     }
-    //GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("ProjectileClass")); //for debugging
-    //if (BlueProjectileClass)
-    //{
-    //    GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("CalledFire")); //for debugging
-    //    // Get the camera transform.
-    //    FVector CameraLocation;
-    //    FRotator CameraRotation;
-    //    GetActorEyesViewPoint(CameraLocation, CameraRotation);
-
-    //    // Set MuzzleOffset to spawn projectiles slightly in front of the camera.
-    //    MuzzleOffset.Set(100.0f, 0.0f, 0.0f);
-
-    //    // Transform MuzzleOffset from camera space to world space.
-    //    FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
-
-    //    // Skew the aim to be slightly upwards.
-    //    FRotator MuzzleRotation = CameraRotation;
-    //    MuzzleRotation.Pitch += 10.0f;
-
-    //    UWorld* World = GetWorld();
-    //    if (World)
-    //    {
-    //        FActorSpawnParameters SpawnParams;
-    //        SpawnParams.Owner = this;
-    //        SpawnParams.Instigator = GetInstigator();
-
-    //        // Spawn the projectile at the muzzle.
-    //        AFPSBlueProjectile* Projectile = World->SpawnActor<AFPSBlueProjectile>(BlueProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
-    //        if (Projectile)
-    //        {
-    //            // Set the projectile's initial trajectory.
-    //            FVector LaunchDirection = MuzzleRotation.Vector();
-    //            Projectile->FireInDirection(LaunchDirection);
-    //            ballColor = 0; //for not allowing the ball to be thrown
-    //        }
-    //    }
-    //}
 }

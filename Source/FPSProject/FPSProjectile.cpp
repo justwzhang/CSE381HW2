@@ -2,6 +2,7 @@
 
 #include "FPSProjectile.h"
 #include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
 #include <FPSProject/JumpingAICharacter.h>
 
 // Sets default values
@@ -9,6 +10,8 @@ AFPSProjectile::AFPSProjectile()
 {
     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
+    Holding = false;
+    Gravity = true;
 
     if (!RootComponent)
     {
@@ -72,13 +75,45 @@ AFPSProjectile::AFPSProjectile()
 void AFPSProjectile::BeginPlay()
 {
     Super::BeginPlay();
+    MyCharacter = UGameplayStatics::GetPlayerCharacter(this, 0);
+    PlayerCamera = MyCharacter->FindComponentByClass<UCameraComponent>();
+    TArray<USceneComponent*> Components;
+    MyCharacter->GetComponents(Components);
+    if (Components.Num() > 0)
+    {
+        for (auto& Comp : Components)
+        {
+            if (Comp->GetName() == "HoldingComponent")
+            {
+                HoldingComp = Cast<USceneComponent>(Comp);
+            }
+        }
+    }
+}
 
+void AFPSProjectile::Pickup()
+{
+    Holding = !Holding;
+    Gravity = !Gravity;
+    ProjectileMeshComponent ->SetEnableGravity(Gravity);
+    ProjectileMeshComponent->SetSimulatePhysics(Holding ? false : true);
+    ProjectileMeshComponent->SetCollisionEnabled(Holding ? ECollisionEnabled::NoCollision : ECollisionEnabled::QueryAndPhysics);
+    if (HoldingComp && Holding)
+    {
+        ProjectileMeshComponent->AttachToComponent(HoldingComp, FAttachmentTransformRules::KeepWorldTransform);
+        SetActorLocation(HoldingComp->GetComponentLocation());
+    }
 }
 
 // Called every frame
 void AFPSProjectile::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+
+    if (HoldingComp && Holding)
+    {
+        SetActorLocation(HoldingComp->GetComponentLocation());
+    }
 
 }
 
@@ -101,9 +136,6 @@ void AFPSProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor
         //GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("test")); //for debugging
         Destroy();
     }
-    if (dynamic_cast<ACharacter*>(OtherActor) != nullptr) {
-        //GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("HitPlayer")); //for debugging
-    }//not working rn
 
     
 }
