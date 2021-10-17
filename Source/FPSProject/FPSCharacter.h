@@ -33,6 +33,8 @@ protected:
     TSubclassOf<class AFPSProjectile> ProjectileClassSpawn;
     UPROPERTY(EditDefaultsOnly, Category = Spawning)
     TSubclassOf<class AFPSBlueProjectile> BlueProjectileClassSpawn;*/
+    bool OverlapOrange;
+    bool OverlapBlue;
 
 
 public:

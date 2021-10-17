@@ -10,7 +10,8 @@ AFPSCharacter::AFPSCharacter()
 {
     // Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
-
+    OverlapOrange = false;
+    OverlapBlue = false;
     // Create a first person camera component.
     FPSCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
     check(FPSCameraComponent != nullptr);
@@ -57,6 +58,46 @@ AFPSCharacter::AFPSCharacter()
     CurrentHeldBlueProjectile = nullptr;
     }
 
+// Called every frame
+void AFPSCharacter::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+    if (OverlapOrange) {
+        FVector Start = FPSCameraComponent->GetComponentLocation();
+        FVector Forward = FPSCameraComponent->GetForwardVector();
+        FVector End = ((Forward * 250) + Start);
+        FHitResult Hit;
+        FComponentQueryParams DefaultComponentQueryParams;
+        FCollisionResponseParams DefaultResponseParam;
+        if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, DefaultComponentQueryParams, DefaultResponseParam))
+        {
+            if (Hit.GetActor()->GetClass()->IsChildOf(AFPSProjectile::StaticClass()))
+            {
+                CurrentHeldProjectile->Pickup();
+                //temp->Destroy();
+                ballColor = 1;
+            }
+        }
+    }
+    if (OverlapBlue) {
+        FVector Start = FPSCameraComponent->GetComponentLocation();
+        FVector Forward = FPSCameraComponent->GetForwardVector();
+        FVector End = ((Forward * 250) + Start);
+        FHitResult Hit;
+        FComponentQueryParams DefaultComponentQueryParams;
+        FCollisionResponseParams DefaultResponseParam;
+        if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, DefaultComponentQueryParams, DefaultResponseParam))
+        {
+            if (Hit.GetActor()->GetClass()->IsChildOf(AFPSBlueProjectile::StaticClass()))
+            {
+                CurrentHeldBlueProjectile->Pickup();
+                //temp->Destroy();
+                ballColor = 2;
+            }
+        }
+    }
+
+}
 void AFPSCharacter::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
     if (OtherActor && (OtherActor != this) && OtherComp && ballColor == 0)
@@ -64,19 +105,46 @@ void AFPSCharacter::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, cl
         //GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Overlap Begin"));
         if (dynamic_cast<AFPSProjectile*>(OtherActor) != nullptr) {
             //GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Is A Projectile"));
+            OverlapOrange = true;
             AFPSProjectile* temp = dynamic_cast<AFPSProjectile*>(OtherActor);
             CurrentHeldProjectile = temp;
-            CurrentHeldProjectile->Pickup();
-            //temp->Destroy();
-            ballColor = 1;
+            FVector Start = FPSCameraComponent->GetComponentLocation();
+            FVector Forward = FPSCameraComponent->GetForwardVector();
+            FVector End = ((Forward * 250) + Start);
+            FHitResult Hit;
+            FComponentQueryParams DefaultComponentQueryParams;
+            FCollisionResponseParams DefaultResponseParam;
+            if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, DefaultComponentQueryParams, DefaultResponseParam))
+            {
+                if (Hit.GetActor()->GetClass()->IsChildOf(AFPSProjectile::StaticClass()))
+                {
+                    CurrentHeldProjectile->Pickup();
+                    //temp->Destroy();
+                    ballColor = 1;
+                }
+            }
         }
         if (dynamic_cast<AFPSBlueProjectile*>(OtherActor) != nullptr) {
+            OverlapBlue = true;
             //GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Is A Projectile"));
             AFPSBlueProjectile* temp = dynamic_cast<AFPSBlueProjectile*>(OtherActor);
             CurrentHeldBlueProjectile = temp;
-            temp->Pickup();
-            //temp->Destroy();
-            ballColor = 2;
+            FVector Start = FPSCameraComponent->GetComponentLocation();
+            FVector Forward = FPSCameraComponent->GetForwardVector();
+            FVector End = ((Forward * 250) + Start);
+            FHitResult Hit;
+            FComponentQueryParams DefaultComponentQueryParams;
+            FCollisionResponseParams DefaultResponseParam;
+            if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, DefaultComponentQueryParams, DefaultResponseParam))
+            {
+                if (Hit.GetActor()->GetClass()->IsChildOf(AFPSBlueProjectile::StaticClass()))
+                {
+                    CurrentHeldBlueProjectile->Pickup();
+                    //temp->Destroy();
+                    ballColor = 2;
+                }
+            }
+            
         }
     }
 }
@@ -85,7 +153,26 @@ void AFPSCharacter::OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, clas
 {
     if (OtherActor && (OtherActor != this) && OtherComp)
     {
+            OverlapOrange = false;
+            OverlapBlue = false;
         //GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Overlap End"));
+        //if (ballColor == 0) {
+        //    OverlapOrange = false;
+        //    OverlapBlue = false;
+        //    CurrentHeldProjectile = nullptr;
+        //    CurrentHeldBlueProjectile = nullptr;
+        //    //GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Overlap End"));
+        //}
+        //if (ballColor == 1) {
+        //    OverlapOrange = false;
+        //    OverlapBlue = false;
+        //    CurrentHeldBlueProjectile = nullptr;
+        //}
+        //if (ballColor == 2) {
+        //    OverlapOrange = false;
+        //    OverlapBlue = false;
+        //    CurrentHeldProjectile = nullptr;
+        //}
     }
 }
 
@@ -96,41 +183,9 @@ void AFPSCharacter::BeginPlay()
 
     if (GEngine)
     {
-        // Display a debug message for five seconds. 
-        // The -1 "Key" value argument prevents the message from being updated or refreshed.
-        //GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("We are using FPSCharacter."));
-    }
-}
 
-/*void AFPSCharacter::SpawnObject(const FVector loc, const FRotator rot) {
-    if (ballColor == 1) {//orange
-        //GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("In Spawned orange")); //for debugging
-        const FRotator rotation;
-        const FActorSpawnParameters temp;
-        AFPSProjectile* Spawned = GetWorld()->SpawnActor<AFPSProjectile>(loc, rot, temp);
-        //if (Spawned != nullptr) {
-        //    GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Spawned in")); //for debugging
-        //}
-        using namespace std::this_thread; // sleep_for, sleep_until
-        using namespace std::chrono; // nanoseconds, system_clock, seconds
-        sleep_for(nanoseconds(10000000));
-        Spawned ->Destroy();
     }
-    else if (ballColor == 2) {//blue
-    }
-}*/
-// Called every frame
-void AFPSCharacter::Tick(float DeltaTime)
-{
-    Super::Tick(DeltaTime);
-    /*const FVector loc = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
-    const FVector temp = FPSCameraComponent->GetRelativeLocation();
-    const FVector newloc = loc + FVector(150,0,20);
-    const FVector newTemp = temp + FVector(80, 0, 50);
-    const FRotator rot = FPSCameraComponent->GetRelativeRotation();
-    SpawnObject(newTemp, rot);*/
 }
-    
 
 // Called to bind functionality to input
 void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

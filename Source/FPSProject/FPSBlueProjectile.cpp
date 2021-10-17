@@ -93,7 +93,7 @@ void AFPSBlueProjectile::BeginPlay()
 }
 void AFPSBlueProjectile::Pickup()
 {
-    GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("BluePickup"));
+    //GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("BluePickup"));
     Holding = !Holding;
     Gravity = !Gravity;
     ProjectileMeshComponent->SetEnableGravity(Gravity);
@@ -101,7 +101,7 @@ void AFPSBlueProjectile::Pickup()
     ProjectileMeshComponent->SetCollisionEnabled(Holding ? ECollisionEnabled::NoCollision : ECollisionEnabled::QueryAndPhysics);
     if (HoldingComp && Holding)
     {
-        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("HoldingComp"));
+        //GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("HoldingComp"));
         ProjectileMeshComponent->AttachToComponent(HoldingComp, FAttachmentTransformRules::KeepWorldTransform);
         SetActorLocation(HoldingComp->GetComponentLocation());
     }
